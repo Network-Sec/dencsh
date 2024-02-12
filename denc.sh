@@ -5,23 +5,25 @@ verbose=false
 encrypt() {
   [[ $verbose == true ]] && echo "Encrypted Text:"
   echo -n "$1" | openssl enc -aes256 -iter 10000 -pass "pass:$password" 2>/dev/null | base64 -w 0
-  [[ $verbose == true ]] && echo ""
+  echo ""
 }
 
 decrypt() {
   [[ $verbose == true ]] && echo "Decrypted Text:"
   echo -n "$1" | tr -d '\n' | base64 -d 2>/dev/null | openssl aes256 -iter 10000 -d -pass "pass:$password"
-  [[ $verbose == true ]] && echo ""
+  echo ""
 }
 
 encrypt_file() {
   [[ $verbose == true ]] && echo "Encrypting file: $1"
   openssl enc -aes256 -iter 10000 -pass "pass:$password" -in "$1" 2>/dev/null | base64 -w 0
+  echo ""
 }
 
 decrypt_file() {
   [[ $verbose == true ]] && echo "Decrypting file: $1"
   base64 -d "$1" 2>/dev/null | openssl aes256 -iter 10000 -d -pass "pass:$password"
+  echo ""
 }
 
 is_finished() {
