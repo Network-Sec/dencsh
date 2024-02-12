@@ -2,7 +2,6 @@
 
 password="YourSuperSecretPassword"
 verbose=false
-
 encrypt() {
   [[ $verbose == true ]] && echo "Encrypted Text:"
   echo -n "$1" | openssl enc -aes256 -iter 10000 -pass "pass:$password" 2>/dev/null | base64 -w 0
@@ -13,6 +12,16 @@ decrypt() {
   [[ $verbose == true ]] && echo "Decrypted Text:"
   echo -n "$1" | tr -d '\n' | base64 -d 2>/dev/null | openssl aes256 -iter 10000 -d -pass "pass:$password"
   [[ $verbose == true ]] && echo ""
+}
+
+encrypt_file() {
+  [[ $verbose == true ]] && echo "Encrypting file: $1"
+  openssl enc -aes256 -iter 10000 -pass "pass:$password" -in "$1" 2>/dev/null | base64 -w 0
+}
+
+decrypt_file() {
+  [[ $verbose == true ]] && echo "Decrypting file: $1"
+  base64 -d "$1" 2>/dev/null | openssl aes256 -iter 10000 -d -pass "pass:$password"
 }
 
 is_finished() {
@@ -37,15 +46,20 @@ if [ "$1" == "-v" ]; then
   shift
 fi
 
-if [ "$1" == "-e" ]; then
-  if [ -z "$2" ]; then
+if [ "$1" == "-e" ] && [ "$2" == "-f" ] && [ -n "$3" ]; then
+  encrypt_file "$3"
+elif [ "$1" == "-f" ] && [ -n "$2" ]; then
+  decrypt_file "$2"
+elif [ "$1" == "-e" ]; then
+  shift
+  if [ -z "$1" ]; then
     verbose=true
     echo "Enter the text to encrypt (Press Enter twice to finish input):"
     input=$(is_finished)
     encrypt "$input"
     echo
   else
-    encrypt "$2"
+    encrypt "$1"
     echo
   fi
 else
